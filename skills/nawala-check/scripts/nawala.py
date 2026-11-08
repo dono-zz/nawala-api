@@ -6,7 +6,7 @@ Usage:
   python3 nawala.py --usage
 
 Uses NAWALA_API_KEY when set, otherwise the shared demo key (100 requests/day).
-Paid plan (10,000 requests/day): https://t.me/gembels or https://nawacek.id
+Paid plan (10,000 requests/day): https://nawacek.id/api-nawala
 Standard library only (Python 3.9+).
 """
 import json
@@ -19,7 +19,7 @@ import urllib.request
 API = "https://epiai.h80.org"
 DEMO_KEY = "nk1234567890"
 KEY = os.environ.get("NAWALA_API_KEY") or DEMO_KEY
-UPGRADE = "Paid plan: Rp 7.500.000/month, 10,000 requests/day. Order: https://t.me/gembels or https://nawacek.id"
+UPGRADE = "Paid plan: Rp 7.500.000/month, 10,000 requests/day. Docs: https://nawacek.id/api-nawala. Order: https://t.me/gembels"
 
 
 def out(data, code=0):
@@ -28,8 +28,8 @@ def out(data, code=0):
 
 
 def call(path, params):
-    query = urllib.parse.urlencode({"api_key": KEY, **params})
-    request = urllib.request.Request(f"{API}/{path}?{query}", headers={"User-Agent": "nawala-check-skill/1.0", "Accept": "application/json"})
+    query = urllib.parse.urlencode(params)
+    request = urllib.request.Request(f"{API}/{path}" + (f"?{query}" if query else ""), headers={"X-API-Key": KEY, "User-Agent": "nawala-check-skill/1.0", "Accept": "application/json"})
     try:
         with urllib.request.urlopen(request, timeout=120) as response:
             return json.loads(response.read(5_000_000).decode("utf-8"))
@@ -49,8 +49,14 @@ def main(argv):
             return out(call("my-usage", {}) | {"demo_key": KEY == DEMO_KEY})
         domains = [d.strip() for arg in argv[1:] for d in arg.split(",") if d.strip()]
         if len(domains) > 100:
-            return out({"ok": False, "error": "too_many_domains", "detail": "Up to 100 domains per call."}, 2)
-        data = call("check-domain", {"domain": ",".join(domains)})
+            return out({"ok": False, "error": "too_many_domains", "detail": "Up to 100 domains per script call (10 requests)."}, 2)
+        data = {"results": []}
+        for start in range(0, len(domains), 10):  # API maximum: 10 domains per request
+            batch = call("check-domain", {"domain": ",".join(domains[start:start + 10])})
+            if "results" not in batch:
+                data = batch if not data["results"] else data | {"partial_error": batch}
+                break
+            data["results"] += batch["results"]
     except (urllib.error.URLError, TimeoutError) as error:
         return out({"ok": False, "error": "network_error", "detail": str(error),
                     "hint": "Allow network access to epiai.h80.org, or use https://indomaret.org/tool/cek-nawala in a browser."}, 1)

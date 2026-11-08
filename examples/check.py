@@ -11,8 +11,8 @@ KEY = os.environ.get("NAWALA_API_KEY", "nk1234567890")  # demo key: 100 requests
 
 
 def check(domains):
-    query = urllib.parse.urlencode({"api_key": KEY, "domain": ",".join(domains)})
-    request = urllib.request.Request(f"{API}/check-domain?{query}", headers={"User-Agent": "nawala-api-example/1.0"})
+    query = urllib.parse.urlencode({"domain": ",".join(domains[:10])})  # max 10 per request
+    request = urllib.request.Request(f"{API}/check-domain?{query}", headers={"X-API-Key": KEY, "User-Agent": "nawala-api-example/1.0"})
     with urllib.request.urlopen(request, timeout=90) as response:
         return json.load(response)
 

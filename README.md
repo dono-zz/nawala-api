@@ -1,6 +1,8 @@
-# Nawala API: cek domain diblokir Kominfo & operator
+# Nawala API: cek domain diblokir Komdigi (Kominfo) & operator
 
-API untuk mengecek apakah domain **diblokir di Indonesia** (Nawala / Internet Positif / TrustPositif) oleh Kominfo dan operator seluler: Telkomsel, Indosat Ooredoo, XL Axiata, Axis, Three, Smartfren, IDNIC, iForte, Lintasarta, dan lainnya. Cocok untuk bot Telegram, panel hosting, dan monitoring domain.
+> Dokumentasi resmi: **[nawacek.id/api-nawala](https://nawacek.id/api-nawala)**. Repo ini berisi ringkasan, key demo, contoh kode, dan skill AI.
+
+API untuk mengecek apakah domain **diblokir di Indonesia** (Nawala / Internet Positif / TrustPositif) oleh Komdigi (dulu Kominfo) dan 11 provider: Telkomsel, Indosat Ooredoo, XL Axiata, Axis, Three, Smartfren, IDNIC, iForte, Lintasarta, dan lainnya. Cocok untuk bot Telegram, panel hosting, dan monitoring domain.
 
 [English below](#english)
 
@@ -13,14 +15,16 @@ API untuk mengecek apakah domain **diblokir di Indonesia** (Nawala / Internet Po
 | **Limit demo** | 100 request per hari (dipakai bersama semua pengguna demo) |
 
 ```bash
-curl "https://epiai.h80.org/check-domain?api_key=nk1234567890&domain=reddit.com"
+curl -H "X-API-Key: nk1234567890" "https://epiai.h80.org/check-domain?domain=reddit.com"
 ```
+
+Kirim key lewat header `X-API-Key` supaya tidak tercatat di log URL. Parameter `api_key=` di query juga diterima.
 
 Key demo dipakai bersama, jadi limitnya bisa habis sebelum hari berganti. Untuk produksi, pakai paket berbayar.
 
 ## Paket berbayar
 
-**Rp 7.500.000 / bulan**: 10.000 request per hari, key pribadi, banyak domain per request.
+**Rp 7.500.000 / bulan**: 10.000 request per hari, maksimal 10 domain per request, key pribadi.
 Order lewat Telegram **[@gembels](https://t.me/gembels)** atau [nawacek.id](https://nawacek.id/?utm_source=github&utm_medium=referral&utm_campaign=nawala-api).
 
 ## Endpoint
@@ -28,21 +32,24 @@ Order lewat Telegram **[@gembels](https://t.me/gembels)** atau [nawacek.id](http
 ### 1. Cek satu domain
 
 ```
-GET https://epiai.h80.org/check-domain?api_key=API_KEY&domain=reddit.com
+GET https://epiai.h80.org/check-domain?domain=reddit.com
+X-API-Key: API_KEY
 ```
 
 ### 2. Cek banyak domain sekaligus
 
-Pisahkan dengan koma. Satu panggilan dihitung **1 request**, berapa pun jumlah domainnya (maksimal 100 domain).
+Pisahkan dengan koma, **maksimal 10 domain** per request. Satu panggilan dihitung 1 request.
 
 ```
-GET https://epiai.h80.org/check-domain?api_key=API_KEY&domain=reddit.com,google.com,contoh.id
+GET https://epiai.h80.org/check-domain?domain=reddit.com,google.com,contoh.id
+X-API-Key: API_KEY
 ```
 
 ### 3. Cek sisa limit
 
 ```
-GET https://epiai.h80.org/my-usage?api_key=API_KEY
+GET https://epiai.h80.org/my-usage
+X-API-Key: API_KEY
 ```
 
 ```json
@@ -114,22 +121,26 @@ Claude Code: `/plugin marketplace add dono-zz/indomaret-skills` lalu `/plugin in
 
 ## English
 
-An API that checks whether a domain is **blocked in Indonesia** (Nawala / Internet Positif / TrustPositif) by Kominfo and the mobile operators: Telkomsel, Indosat Ooredoo, XL Axiata, Axis, Three, Smartfren, IDNIC, iForte, Lintasarta and more.
+Official docs: **[nawacek.id/api-nawala](https://nawacek.id/api-nawala)**.
+
+An API that checks whether a domain is **blocked in Indonesia** (Nawala / Internet Positif / TrustPositif) by Komdigi (formerly Kominfo) and 11 providers: Telkomsel, Indosat Ooredoo, XL Axiata, Axis, Three, Smartfren, IDNIC, iForte, Lintasarta and more.
 
 **Free demo:** API URL `https://epiai.h80.org`, key `nk1234567890`, 100 requests per day shared by every demo user.
 
 ```bash
-curl "https://epiai.h80.org/check-domain?api_key=nk1234567890&domain=reddit.com,google.com"
+curl -H "X-API-Key: nk1234567890" "https://epiai.h80.org/check-domain?domain=reddit.com,google.com"
 ```
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /check-domain?api_key=KEY&domain=a.com,b.com` | Check one or many domains (comma-separated, up to 100). One call = 1 request. |
-| `GET /my-usage?api_key=KEY` | Remaining quota and reset time. |
+| `GET /check-domain?domain=a.com,b.com` | Check up to 10 domains (comma-separated). One call = 1 request. |
+| `GET /my-usage` | Remaining quota and reset time. |
+
+Send the key in the `X-API-Key` header (the `api_key=` query parameter also works).
 
 `status` is `blocked` when at least one provider blocks the domain, otherwise `allowed`; `provider_info` lists each provider's `BLOCKED` / `ALLOWED` result. Results are cached for 5 minutes; schemes and paths are stripped automatically (`www` is kept).
 
-**Paid plan:** Rp 7,500,000 per month, 10,000 requests per day, private key. Order on Telegram **[@gembels](https://t.me/gembels)** or at [nawacek.id](https://nawacek.id/?utm_source=github&utm_medium=referral&utm_campaign=nawala-api).
+**Paid plan:** Rp 7,500,000 per month, 10,000 requests per day, up to 10 domains per request, private key. Order on Telegram **[@gembels](https://t.me/gembels)** or at [nawacek.id](https://nawacek.id/?utm_source=github&utm_medium=referral&utm_campaign=nawala-api).
 
 AI agents: `npx skills add dono-zz/nawala-api` installs the `nawala-check` skill; set `NAWALA_API_KEY` to use your own key.
 
